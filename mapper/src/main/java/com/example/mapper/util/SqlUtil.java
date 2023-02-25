@@ -3,7 +3,7 @@ package com.example.mapper.util;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.example.mapper.dao.ConditionInfo;
 import com.example.mapper.dao.DataDto;
-import com.example.mapper.enums.FilterType;
+import com.example.mapper.enums.MethodType;
 
 import java.util.List;
 
@@ -38,8 +38,11 @@ public class SqlUtil {
 
     private static String getConditionByType(ConditionInfo conditionInfo) {
         String type = conditionInfo.getType();
-        if (FilterType.LIKE.getLabel().equals(type)) {
-            return " like %" + conditionInfo.getValue() + "%";
+        if (MethodType.LIKE.getLabel().equals(type)) {
+            return " like %'" + conditionInfo.getValue() + "'%";
+        }
+        if (MethodType.EQUAL.getLabel().equals(type)) {
+            return type + "'" + conditionInfo.getValue() + "'";
         }
         return type + " " + conditionInfo.getValue();
     }

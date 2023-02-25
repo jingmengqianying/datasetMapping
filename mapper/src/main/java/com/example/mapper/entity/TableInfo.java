@@ -8,16 +8,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 /**
  * @author jixy
  * @date 2023/2/21
  */
-@TableName("mapper")
+@TableName("table_info")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ManagerTable {
+public class TableInfo {
     @TableId(type = IdType.AUTO)
     private Integer id;
 
@@ -25,9 +27,9 @@ public class ManagerTable {
 
     private String tableDesc;
 
-    private String info;
-
     private String role;
 
     private String createTime;
+
+    private String updateTime;
 }

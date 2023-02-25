@@ -11,6 +11,8 @@ import java.util.List;
 @Data
 public class DataDto {
     private String tableName;
+
     private List<String> columnList;
+
     private List<ConditionInfo> conditions;
 }

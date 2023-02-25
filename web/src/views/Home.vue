@@ -4,22 +4,24 @@
       <el-form :model="formData" label-width="120px" class="demo-ruleForm" status-icon>
         <el-form-item label="表名" prop="tableName" :rules="rules.tableName">
           <el-select v-model="formData.tableName" class="m-2" placeholder="请选择">
-            <el-option v-for="item in tableInfo" :key="item.name" :label="item.desc" :value="item.name"/>
+            <el-option v-for="item in tableInfo" :key="item.name" :label="item.label" :value="item.name"/>
           </el-select>
         </el-form-item>
 
         <el-form-item label="字段名" prop="columnName">
           <el-checkbox-group v-model="formData.columnList">
-            <el-checkbox v-for="item in columnNames" :label="item.name" :key="item.name" :value="item.name" border>{{item.desc}}</el-checkbox>
+            <el-checkbox v-for="item in columnNames" :label="item.name" :key="item.name" :value="item.name" border>
+              {{ item.label }}
+            </el-checkbox>
           </el-checkbox-group>
         </el-form-item>
 
         <el-form-item label="查询条件" prop="condition">
-          <el-button class="mt-4" @click="onAddItem">增加查询条件</el-button>
+          <el-button class="primary" @click="onAddItem">增加查询条件</el-button>
           <br>
           <div v-for="(condition, index) in formData.conditions" :key="condition.name">
             <el-select v-model="condition.name" class="m-2" placeholder="请选择字段名">
-              <el-option v-for="item in columnNames" :key="item.name" :label="item.desc" :value="item.name"/>
+              <el-option v-for="item in columnNames" :key="item.name" :label="item.label" :value="item.name"/>
             </el-select>
             <el-select v-model="condition.type" class="m-2" placeholder="过滤类型">
               <el-option v-for="item in conditionType" :key="item.value" :label="item.label" :value="item.value"/>
@@ -38,7 +40,7 @@
     <div v-show="tableShow">
       <el-table :data="tableData" stripe style="width: 100%" height="250" v-loading="loading">
         <el-table-column v-for="(item, index) in columnList" :key="index"
-                         :label="item.desc" :prop="item.name"/>
+                         :label="item.label" :prop="item.name"/>
       </el-table>
       <div style="margin: 10px 0">
         <el-pagination
@@ -48,8 +50,8 @@
             :disabled="disabled"
             layout="total, sizes, prev, pager, next, jumper"
             :total="total"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
+            @size-change="handleSizeChange(pageSize)"
+            @current-change="handleCurrentChange(currentPage)"
         />
       </div>
     </div>
@@ -79,6 +81,10 @@ const conditionType = [
     label: '等于',
   },
   {
+    value: '!=',
+    label: '不等于',
+  },
+  {
     value: 'like',
     label: '模糊匹配',
   }
@@ -99,9 +105,9 @@ export default {
       columnNames: [],
       conditionType: conditionType,
       tableShow: false,
-      loading:true,
+      loading: true,
       tableData: [],
-      columnList:[],
+      columnList: [],
       currentPage: 1,
       pageSize: 5,
       disabled: false,
@@ -114,13 +120,13 @@ export default {
   watch: {
     'formData.tableName': { // 对对象进行深度监听
       handler(newValue) {
-        this.tableInfo.forEach(info => {
-          if (newValue === info.name) {
-            this.columnNames = info.columns
+        request.get('/api/columnManager/getColumnInfoByTableName', {params: {tableName: newValue}}).then(res => {
+          if (res.code === '0') {
+            this.columnNames = res.data
           }
         })
       },
-      immediate: true,
+      immediate: false,
       deep: true
     }
   },
@@ -135,8 +141,7 @@ export default {
       request.get('/api/manager/getByRole', {params: {role: role}}).then(res => {
         if (res.code === '0') {
           res.data.forEach((rowData) => {
-            const columnsInfo = JSON.parse(rowData.info)
-            this.tableInfo.push({"name":rowData.tableName,"desc":rowData.tableDesc,"columns":columnsInfo})
+            this.tableInfo.push({"name": rowData.tableName, "label": rowData.tableDesc})
           })
         } else {
           alert("获取表信息错误！")
@@ -160,7 +165,7 @@ export default {
             if (this.formData.columnList === undefined || this.formData.columnList.length <= 0) {
               this.columnList = this.columnNames;
             } else {
-              this.columnNames.forEach(item=>{
+              this.columnNames.forEach(item => {
                 if (this.formData.columnList.includes(item.name)) {
                   this.columnList.push(item);
                 }

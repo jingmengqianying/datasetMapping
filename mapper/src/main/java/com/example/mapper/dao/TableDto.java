@@ -8,9 +8,13 @@ import lombok.Data;
  */
 @Data
 public class TableDto {
-    private String id;
+    private Integer id;
 
-    private TableInfo info;
+    private String tableName;
+
+    private String tableDesc;
 
     private String role;
+
+    private String createTime;
 }
